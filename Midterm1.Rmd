@@ -67,4 +67,17 @@ table(explore$Dimension)
 
 ```
 
+```{r, impute missing values for Estimate Percent variable by year, vaccine type, state, age group }
+mydata [ , Year_num := (as.numeric(Year, na.rm=F))]
+mydata [ , Vaccine_num := (as.numeric(Vaccine, na.rm=F))]
+mydata [ , Geography_name_num := (as.numeric(Geography_name, na.rm=F))]
+mydata [ , Dimension_num := (as.numeric(Dimension, na.rm=F))]
+mydata [ , Estimate_Percent_num := (as.numeric(Estimate_Percent, na.rm=F))]
 
+
+mydata[, Estimate_Percent_imp := fcoalesce(Estimate_Percent_num, mean(Estimate_Percent_num, na.rm = T)),
+    by = .(Vaccine_num, Year_num, Geography_name_num, Dimension_num )]
+
+mean(mydata$Estimate_Percent_imp)
+
+```
