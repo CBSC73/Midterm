@@ -1,0 +1,70 @@
+---
+title: "Midterm"
+author: "CB"
+date: "`r Sys.Date()`"
+output: github_document
+always_allow_html: true
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## **Title: Influenza Vaccine Uptake by Region and Age Group from 2012-2019 in the United States**
+# **Introduction: Pregnant women and newborns are at higher risk for severe illness from Influenza virus infection(Ref). Influenza during pregnancy can lead to severe maternal respiratory illness requiring hospitalization. It can also be a serious condition for infants (babies under 1 year of age), especially during the neonatal period (first 30 days of life) and for those with pre-existing respiratory conditions such as bronchopulmonary dysplasia (Ref). The yearly influenza vaccine has a long track record of safety and efficacy during pregnancy and is recommended by the Centers for Disease Control (CDC) for all pregnant women (Ref). Despite this recommendation, only approximately 50% of women receive the influenza vaccine during pregnancy (ref).The objective of this qualitative data analysis is two fold, first to examine factors associated with low vaccine uptake. Specifically, age group, location, and ethnicity. And second, to examine these trends over time to see whether uptake is increasing or decreasing. Identifying those pregnant women less likely to get vaccinated can help inform where efforts to promote vaccine utilization are needed most.   
+
+```{r, Load required libraries}
+library(data.table)
+library(dplyr)
+library(tidyverse)
+library(leaflet)
+library(dtplyr)
+library(knitr)
+library(ggplot2)
+```
+
+```{r, load data from CDC website}
+library(readr)
+Vaccination_Coverage_among_Pregnant_Women <- read_csv("C:/Users/clair/Desktop/PM566/Vaccination_Coverage_among_Pregnant_Women.csv", 
+    col_types = cols(Estimate_Percent = col_number()))
+View(Vaccination_Coverage_among_Pregnant_Women)
+```
+```{r}
+mydata<-Vaccination_Coverage_among_Pregnant_Women
+dim(mydata)
+setDT(mydata)
+```
+```{r}
+head(mydata)
+tail(mydata)
+```
+```{r, explore the variables in the dataset}
+unique(mydata$Vaccine)
+unique(mydata$Geography_Type)
+unique(mydata$Geography_name)
+unique(mydata$Year)
+unique(mydata$"Dimension Type")
+unique(mydata$Dimension)
+```
+```{r, check which variables have missing values}
+
+colSums(is.na(mydata))
+```
+```{r, examine variables for implausible values}
+summary(mydata$Estimate_Percent)
+```
+
+```{r}
+summary(mydata$Year)
+```
+```{r, explore missing values by year, vaccine type, state, age group}
+explore <-subset(mydata, is.na(mydata$Estimate_Percent))
+dim(explore)
+table(explore$Vaccine)
+table(explore$Year)
+table(explore$Geography_name)
+table(explore$Dimension)
+
+```
+
+
