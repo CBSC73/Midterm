@@ -3,9 +3,9 @@ Midterm
 CB
 2022-10-19
 
-## **Title: Influenza Vaccine Uptake by Region and Age Group from 2012-2019 in the United States**
+# **Title: Influenza Vaccine Uptake by Region and Age Group from 2012-2019 in the United States**
 
-# \*\*Introduction: Pregnant women and newborns are at higher risk for severe illness from Influenza virus infection(Ref). Influenza during pregnancy can lead to severe maternal respiratory illness requiring hospitalization. It can also be a serious condition for infants (babies under 1 year of age), especially during the neonatal period (first 30 days of life) and for those with pre-existing respiratory conditions such as bronchopulmonary dysplasia (Ref). The yearly influenza vaccine has a long track record of safety and efficacy during pregnancy and is recommended by the Centers for Disease Control (CDC) for all pregnant women (Ref). Despite this recommendation, only approximately 50% of women receive the influenza vaccine during pregnancy (ref).The objective of this qualitative data analysis is two fold, first to examine factors associated with low vaccine uptake. Specifically, age group, location, and ethnicity. And second, to examine these trends over time to see whether uptake is increasing or decreasing. Identifying those pregnant women less likely to get vaccinated can help inform where efforts to promote vaccine utilization are needed most.
+## **Introduction: Pregnant women and newborns are at higher risk for severe illness from Influenza virus infection(Ref). Influenza during pregnancy can lead to severe maternal respiratory illness requiring hospitalization. It can also be a serious condition for infants (babies under 1 year of age), especially during the neonatal period (first 30 days of life) and for those with pre-existing respiratory conditions such as bronchopulmonary dysplasia (Ref). The yearly influenza vaccine has a long track record of safety and efficacy during pregnancy and is recommended by the Centers for Disease Control (CDC) for all pregnant women (Ref). Despite this recommendation, only approximately 50% of women receive the influenza vaccine during pregnancy (ref). The objective of this qualitative data analysis is two fold, first to examine factors associated with low vaccine uptake. Specifically, age group and location. Second, to examine these trends over time to see whether uptake is increasing or decreasing. Identifying those pregnant women less likely to get vaccinated can help inform where efforts to promote vaccine utilization are needed most.**
 
 ``` r
 library(data.table)
@@ -56,79 +56,55 @@ library(ggplot2)
 
 ``` r
 library(readr)
-Vaccination_Coverage_among_Pregnant_Women <- read_csv("C:/Users/clair/Desktop/PM566/Vaccination_Coverage_among_Pregnant_Women.csv", 
-    col_types = cols(Estimate_Percent = col_number()))
+Vaccination_Coverage_among_Pregnant_Women_3_ <- read_csv("C:/Users/clair/Desktop/PM566/Vaccination_Coverage_among_Pregnant_Women (3).csv", 
+    col_types = cols(`Survey Year_Influenza Season` = col_integer(), 
+        Estimate = col_number(), `95CI` = col_skip(), 
+        `Sample Size` = col_number()))
 ```
 
     ## Warning: One or more parsing issues, see `problems()` for details
 
 ``` r
-View(Vaccination_Coverage_among_Pregnant_Women)
+View(Vaccination_Coverage_among_Pregnant_Women_3_)
 ```
 
 ``` r
-mydata<-Vaccination_Coverage_among_Pregnant_Women
-dim(mydata)
+vaxdata<-Vaccination_Coverage_among_Pregnant_Women_3_
+dim(vaxdata)
 ```
 
-    ## [1] 3621    9
+    ## [1] 3621    8
 
 ``` r
-setDT(mydata)
+head(vaxdata)
 ```
 
-``` r
-head(mydata)
-```
-
-    ##      Vaccine Geography_Type Geography_name Year Dimension Type Dimension
-    ## 1: Influenza         States         Alaska 2012            Age ≥18 Years
-    ## 2: Influenza         States       Arkansas 2012            Age ≥18 Years
-    ## 3: Influenza         States       Colorado 2012            Age ≥18 Years
-    ## 4: Influenza         States       Delaware 2012            Age ≥18 Years
-    ## 5: Influenza         States        Georgia 2012            Age ≥18 Years
-    ## 6: Influenza         States         Hawaii 2012            Age ≥18 Years
-    ##    Estimate_Percent CI_95_percent Sample_Size
-    ## 1:             49.2  45.3 to 53.1         852
-    ## 2:             46.6  40.7 to 52.5         756
-    ## 3:             56.1  52.1 to 60.0        1170
-    ## 4:             41.6  38.4 to 44.8         981
-    ## 5:             33.6  29.6 to 37.7        1007
-    ## 6:             42.0  38.7 to 45.4        1385
+    ## # A tibble: 6 × 8
+    ##   Vaccine   `Geography Type` Geography Survey …¹ Dimen…² Dimen…³ Estim…⁴ Sampl…⁵
+    ##   <chr>     <chr>            <chr>         <int> <chr>   <chr>     <dbl>   <dbl>
+    ## 1 Influenza States           Alaska         2012 Age     >=18 Y…    49.2     852
+    ## 2 Influenza States           Arkansas       2012 Age     >=18 Y…    46.6     756
+    ## 3 Influenza States           Colorado       2012 Age     >=18 Y…    56.1    1170
+    ## 4 Influenza States           Delaware       2012 Age     >=18 Y…    41.6     981
+    ## 5 Influenza States           Georgia        2012 Age     >=18 Y…    33.6    1007
+    ## 6 Influenza States           Hawaii         2012 Age     >=18 Y…    42      1385
+    ## # … with abbreviated variable names ¹​`Survey Year_Influenza Season`,
+    ## #   ²​`Dimension Type`, ³​Dimension, ⁴​Estimate, ⁵​`Sample Size`
 
 ``` r
-tail(mydata)
-```
-
-    ##    Vaccine Geography_Type Geography_name Year Dimension Type
-    ## 1:    Tdap       National  United States 2019 Race/Ethnicity
-    ## 2:    Tdap         States           Utah 2019 Race/Ethnicity
-    ## 3:    Tdap         States        Vermont 2019 Race/Ethnicity
-    ## 4:    Tdap         States       Virginia 2019 Race/Ethnicity
-    ## 5:    Tdap         States     Washington 2019 Race/Ethnicity
-    ## 6:    Tdap         States      Wisconsin 2019 Race/Ethnicity
-    ##              Dimension Estimate_Percent CI_95_percent Sample_Size
-    ## 1: White, Non-Hispanic             80.1  79.0 to 81.2       11702
-    ## 2: White, Non-Hispanic             82.7  79.6 to 85.5        1192
-    ## 3: White, Non-Hispanic             89.0  86.4 to 91.3         675
-    ## 4: White, Non-Hispanic             78.3  71.9 to 83.8         540
-    ## 5: White, Non-Hispanic             84.3  80.2 to 87.9         378
-    ## 6: White, Non-Hispanic             78.4  72.6 to 83.5         270
-
-``` r
-unique(mydata$Vaccine)
+unique(vaxdata$Vaccine)
 ```
 
     ## [1] "Influenza" "Tdap"
 
 ``` r
-unique(mydata$Geography_Type)
+unique(vaxdata$'Geography Type')
 ```
 
     ## [1] "States"   "National"
 
 ``` r
-unique(mydata$Geography_name)
+unique(vaxdata$Geography)
 ```
 
     ##  [1] "Alaska"               "Arkansas"             "Colorado"            
@@ -150,116 +126,92 @@ unique(mydata$Geography_name)
     ## [49] "Mississippi"          "Florida"
 
 ``` r
-unique(mydata$Year)
+unique(vaxdata$'Survey Year_Influenza Season')
 ```
 
     ## [1] 2012 2013 2014 2015 2016 2017 2018 2019
 
 ``` r
-unique(mydata$"Dimension Type")
+unique(vaxdata$'Dimension Type')
 ```
 
     ## [1] "Age"            "Race/Ethnicity"
 
 ``` r
-unique(mydata$Dimension)
+unique(vaxdata$Dimension)
 ```
 
-    ## [1] "≥18 Years"                            
+    ## [1] ">=18 Years"                           
     ## [2] "18-24 Years"                          
     ## [3] "25-34 Years"                          
-    ## [4] "≥35 Years"                            
+    ## [4] ">=35 Years"                           
     ## [5] "Black, Non-Hispanic"                  
     ## [6] "Hispanic"                             
     ## [7] "Other or Multiple Races, Non-Hispanic"
     ## [8] "White, Non-Hispanic"
 
 ``` r
-colSums(is.na(mydata))
-```
-
-    ##          Vaccine   Geography_Type   Geography_name             Year 
-    ##                0                0                0                0 
-    ##   Dimension Type        Dimension Estimate_Percent    CI_95_percent 
-    ##                0                0              364                0 
-    ##      Sample_Size 
-    ##              173
-
-``` r
-summary(mydata$Estimate_Percent)
-```
-
-    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
-    ##    5.20   51.20   61.20   60.18   70.90   93.70     364
-
-``` r
-summary(mydata$Year)
-```
-
-    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-    ##    2012    2013    2016    2016    2018    2019
-
-``` r
-explore <-subset(mydata, is.na(mydata$Estimate_Percent))
-dim(explore)
-```
-
-    ## [1] 364   9
-
-``` r
-table(explore$Vaccine)
+vaxdata1<-subset(vaxdata, `Dimension Type`=="Age")
+table(vaxdata1$'Dimension Type')
 ```
 
     ## 
-    ## Influenza      Tdap 
-    ##       274        90
+    ##  Age 
+    ## 1824
 
 ``` r
-table(explore$Year)
+dim(vaxdata1)
 ```
 
-    ## 
-    ## 2012 2013 2014 2015 2016 2017 2018 2019 
-    ##   68   41   28   39   35   44   55   54
+    ## [1] 1824    8
 
 ``` r
-table(explore$Geography_name)
+colSums(is.na(vaxdata1))
 ```
 
-    ## 
-    ##              Alabama               Alaska             Arkansas 
-    ##                    5                   12                   22 
-    ##             Colorado             Delaware District of Columbia 
-    ##                   20                    2                    2 
-    ##              Florida              Georgia               Hawaii 
-    ##                    1                    7                   10 
-    ##             Illinois                 Iowa               Kansas 
-    ##                    1                   11                    4 
-    ##             Kentucky            Louisiana                Maine 
-    ##                    6                   11                   27 
-    ##             Michigan            Minnesota          Mississippi 
-    ##                    5                    2                    8 
-    ##             Missouri              Montana        New Hampshire 
-    ##                   20                    9                   34 
-    ##           New Mexico             New York         North Dakota 
-    ##                   10                    2                    6 
-    ##     NY-Rest of state                 Ohio             Oklahoma 
-    ##                   18                    2                   10 
-    ##         Pennsylvania          Puerto Rico            Tennessee 
-    ##                    9                    8                   10 
-    ##                 Utah             Virginia        West Virginia 
-    ##                   16                    5                   24 
-    ##              Wyoming 
-    ##                   25
+    ##                      Vaccine               Geography Type 
+    ##                            0                            0 
+    ##                    Geography Survey Year_Influenza Season 
+    ##                            0                            0 
+    ##               Dimension Type                    Dimension 
+    ##                            0                            0 
+    ##                     Estimate                  Sample Size 
+    ##                           15                            0
 
 ``` r
-table(explore$Dimension)
+vaxdata1 %>% drop_na(Estimate)
 ```
 
-    ## 
-    ##                             ≥35 Years                           18-24 Years 
-    ##                                    14                                     1 
-    ##                   Black, Non-Hispanic                              Hispanic 
-    ##                                   127                                    88 
-    ## Other or Multiple Races, Non-Hispanic                   White, Non-Hispanic 
-    ##                                   131                                     3
+    ## # A tibble: 1,809 × 8
+    ##    Vaccine   `Geography Type` Geography  Surve…¹ Dimen…² Dimen…³ Estim…⁴ Sampl…⁵
+    ##    <chr>     <chr>            <chr>        <int> <chr>   <chr>     <dbl>   <dbl>
+    ##  1 Influenza States           Alaska        2012 Age     >=18 Y…    49.2     852
+    ##  2 Influenza States           Arkansas      2012 Age     >=18 Y…    46.6     756
+    ##  3 Influenza States           Colorado      2012 Age     >=18 Y…    56.1    1170
+    ##  4 Influenza States           Delaware      2012 Age     >=18 Y…    41.6     981
+    ##  5 Influenza States           Georgia       2012 Age     >=18 Y…    33.6    1007
+    ##  6 Influenza States           Hawaii        2012 Age     >=18 Y…    42      1385
+    ##  7 Influenza States           Illinois      2012 Age     >=18 Y…    49.1    1037
+    ##  8 Influenza States           Maine         2012 Age     >=18 Y…    53       654
+    ##  9 Influenza States           Maryland      2012 Age     >=18 Y…    47.9     906
+    ## 10 Influenza States           Massachus…    2012 Age     >=18 Y…    66.1    1456
+    ## # … with 1,799 more rows, and abbreviated variable names
+    ## #   ¹​`Survey Year_Influenza Season`, ²​`Dimension Type`, ³​Dimension, ⁴​Estimate,
+    ## #   ⁵​`Sample Size`
+    ## # ℹ Use `print(n = ...)` to see more rows
+
+``` r
+vaxdataDT<-data.table(vaxdata1)
+is.data.table(vaxdataDT)
+```
+
+    ## [1] TRUE
+
+``` r
+vaxdataDT<-vaxdataDT %>% rename(Year="Survey Year_Influenza Season", Geo_Type="Geography Type", Age_Group="Dimension", Percent_Vaccinated="Estimate")
+```
+
+\#\`\`\`{r, examine variable of interest (% vaccinated) for implausible
+values}
+
+\`\`\`
