@@ -29,7 +29,6 @@ Vaccination_Coverage_among_Pregnant_Women_3_ <- read_csv("C:/Users/clair/Desktop
     col_types = cols(`Survey Year_Influenza Season` = col_integer(), 
         Estimate = col_number(), `95CI` = col_skip(), 
         `Sample Size` = col_number()))
-View(Vaccination_Coverage_among_Pregnant_Women_3_)
 ```
 
 ```{r, rename dataset, look at variables}
@@ -50,28 +49,43 @@ unique(vaxdata$Dimension)
 ```{r, subset data to include age dimension only}
 vaxdata1<-subset(vaxdata, `Dimension Type`=="Age")
 table(vaxdata1$'Dimension Type')
-dim(vaxdata1)
 ```
 ```{r, check for missing values}
 colSums(is.na(vaxdata1))
 ```
 ```{r, remove NAs from dataset given there are only 15 out of 1824 rows (<1%) in my variable of interest, vaccination uptake ("Estimate")}
-vaxdata1 %>% drop_na(Estimate)
+vaxdata1<-vaxdata1 %>% drop_na(Estimate)
 ```
 
 ```{r, make into a data table}
-vaxdataDT<-data.table(vaxdata1)
-is.data.table(vaxdataDT)
+dim(vaxdata1)
+vaxdata_DT=as.data.table(vaxdata1)
+is.data.table(vaxdata_DT)
 ```
 
-```{r, rename variables}
-vaxdataDT<-vaxdataDT %>% rename(Year="Survey Year_Influenza Season", Geo_Type="Geography Type", Age_Group="Dimension", Percent_Vaccinated="Estimate")
+```{r, summary statistics on variable of interest}
+summary(vaxdata_DT$Estimate)
 ```
 
-#```{r, examine variable of interest (% vaccinated) for implausible values}
+
+```{r, divide U.S into regions using CDC breakdown}
+vaxdata_DT_region <-vaxdata_DT [, region := fifelse(Geography== "Alaska"| Geography=="Arizona" | Geography=="California" | Geography=="Colorado"| Geography=="Hawaii"| Geography=="Idaho"| Geography=="Montana"| Geography=="Nevada"| Geography=="New Mexico"| Geography=="Oregon"| Geography=="Utah"| Geography=="Washington"|Geography== "Wyoming", "WEST",
+                fifelse(Geography=="Alabama"|Geography=="Arkansas"|Geography== "Delaware" |Geography== "District of Columbia"| Geography=="Florida"|Geography== "Georgia" | Geography=="Kentucky" |Geography== "Louisiana"|Geography== "Maryland" | Geography=="Mississippi" |Geography=="North Carolina"|Geography=="Oklahoma"| Geography=="South Carolina"| Geography=="Tennessee" |Geography=="Texas"|Geography== "Virginia"|Geography== "West Virginia", "SOUTH",
+                fifelse(Geography=="Illinois"| Geography=="Indiana"| Geography=="Iowa"|Geography== "Kansas"| Geography=="Michigan"|Geography== "Minnesota"| Geography=="Missouri"| Geography=="Nebraska"| Geography=="North Dakota"| Geography=="Ohio"|Geography=="South Dakota"|Geography=="Wisconsin", "MIDWEST",
+                fifelse(Geography=="Puerto Rico"|Geography=="United States", "",
+                        "NORTHEAST"))))]
 
 ```
+```{r, make into data table}
+table(vaxdata_DT_region$region)
+vaxdata_DT_region<-as.data.table(vaxdata_DT_region)
+is.data.table(vaxdata_DT_region)
+```
+```{r, drop NAs}
+vaxdata_DT_region<-subset(vaxdata_DT_region, `region`!="")
 
+table(vaxdata_DT_region$region)
+```
 
 
 

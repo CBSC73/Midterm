@@ -1,7 +1,7 @@
 Midterm
 ================
 CB
-2022-10-19
+2022-10-21
 
 # **Title: Influenza Vaccine Uptake by Region and Age Group from 2012-2019 in the United States**
 
@@ -63,10 +63,6 @@ Vaccination_Coverage_among_Pregnant_Women_3_ <- read_csv("C:/Users/clair/Desktop
 ```
 
     ## Warning: One or more parsing issues, see `problems()` for details
-
-``` r
-View(Vaccination_Coverage_among_Pregnant_Women_3_)
-```
 
 ``` r
 vaxdata<-Vaccination_Coverage_among_Pregnant_Women_3_
@@ -160,12 +156,6 @@ table(vaxdata1$'Dimension Type')
     ## 1824
 
 ``` r
-dim(vaxdata1)
-```
-
-    ## [1] 1824    8
-
-``` r
 colSums(is.na(vaxdata1))
 ```
 
@@ -179,39 +169,78 @@ colSums(is.na(vaxdata1))
     ##                           15                            0
 
 ``` r
-vaxdata1 %>% drop_na(Estimate)
+vaxdata1<-vaxdata1 %>% drop_na(Estimate)
 ```
 
-    ## # A tibble: 1,809 × 8
-    ##    Vaccine   `Geography Type` Geography  Surve…¹ Dimen…² Dimen…³ Estim…⁴ Sampl…⁵
-    ##    <chr>     <chr>            <chr>        <int> <chr>   <chr>     <dbl>   <dbl>
-    ##  1 Influenza States           Alaska        2012 Age     >=18 Y…    49.2     852
-    ##  2 Influenza States           Arkansas      2012 Age     >=18 Y…    46.6     756
-    ##  3 Influenza States           Colorado      2012 Age     >=18 Y…    56.1    1170
-    ##  4 Influenza States           Delaware      2012 Age     >=18 Y…    41.6     981
-    ##  5 Influenza States           Georgia       2012 Age     >=18 Y…    33.6    1007
-    ##  6 Influenza States           Hawaii        2012 Age     >=18 Y…    42      1385
-    ##  7 Influenza States           Illinois      2012 Age     >=18 Y…    49.1    1037
-    ##  8 Influenza States           Maine         2012 Age     >=18 Y…    53       654
-    ##  9 Influenza States           Maryland      2012 Age     >=18 Y…    47.9     906
-    ## 10 Influenza States           Massachus…    2012 Age     >=18 Y…    66.1    1456
-    ## # … with 1,799 more rows, and abbreviated variable names
-    ## #   ¹​`Survey Year_Influenza Season`, ²​`Dimension Type`, ³​Dimension, ⁴​Estimate,
-    ## #   ⁵​`Sample Size`
-    ## # ℹ Use `print(n = ...)` to see more rows
+``` r
+dim(vaxdata1)
+```
+
+    ## [1] 1809    8
 
 ``` r
-vaxdataDT<-data.table(vaxdata1)
-is.data.table(vaxdataDT)
+vaxdata_DT=as.data.table(vaxdata1)
+is.data.table(vaxdata_DT)
 ```
 
     ## [1] TRUE
 
 ``` r
-vaxdataDT<-vaxdataDT %>% rename(Year="Survey Year_Influenza Season", Geo_Type="Geography Type", Age_Group="Dimension", Percent_Vaccinated="Estimate")
+summary(vaxdata_DT$Estimate)
 ```
 
-\#\`\`\`{r, examine variable of interest (% vaccinated) for implausible
-values}
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##    7.70   51.30   60.70   59.87   70.30   91.80
 
-\`\`\`
+``` r
+vaxdata_DT_region <-vaxdata_DT [, region := fifelse(Geography== "Alaska"| Geography=="Arizona" | Geography=="California" | Geography=="Colorado"| Geography=="Hawaii"| Geography=="Idaho"| Geography=="Montana"| Geography=="Nevada"| Geography=="New Mexico"| Geography=="Oregon"| Geography=="Utah"| Geography=="Washington"|Geography== "Wyoming", "WEST",
+                fifelse(Geography=="Alabama"|Geography=="Arkansas"|Geography== "Delaware" |Geography== "District of Columbia"| Geography=="Florida"|Geography== "Georgia" | Geography=="Kentucky" |Geography== "Louisiana"|Geography== "Maryland" | Geography=="Mississippi" |Geography=="North Carolina"|Geography=="Oklahoma"| Geography=="South Carolina"| Geography=="Tennessee" |Geography=="Texas"|Geography== "Virginia"|Geography== "West Virginia", "SOUTH",
+                fifelse(Geography=="Illinois"| Geography=="Indiana"| Geography=="Iowa"|Geography== "Kansas"| Geography=="Michigan"|Geography== "Minnesota"| Geography=="Missouri"| Geography=="Nebraska"| Geography=="North Dakota"| Geography=="Ohio"|Geography=="South Dakota"|Geography=="Wisconsin", "MIDWEST",
+                fifelse(Geography=="Puerto Rico"|Geography=="United States", "",
+                        "NORTHEAST"))))]
+```
+
+``` r
+table(vaxdata_DT_region$region)
+```
+
+    ## 
+    ##             MIDWEST NORTHEAST     SOUTH      WEST 
+    ##        80       408       526       440       355
+
+``` r
+vaxdata_DT_region<-as.data.table(vaxdata_DT_region)
+is.data.table(vaxdata_DT_region)
+```
+
+    ## [1] TRUE
+
+``` r
+vaxdata_DT_region %>% drop_na(region)
+```
+
+    ## Source: local data table [1,809 x 9]
+    ## Call:   na.omit(`_DT1`, cols = "region")
+    ## 
+    ##   Vaccine   Geography T…¹ Geogr…² Surve…³ Dimen…⁴ Dimen…⁵ Estim…⁶ Sampl…⁷ region
+    ##   <chr>     <chr>         <chr>     <int> <chr>   <chr>     <dbl>   <dbl> <chr> 
+    ## 1 Influenza States        Alaska     2012 Age     >=18 Y…    49.2     852 WEST  
+    ## 2 Influenza States        Arkans…    2012 Age     >=18 Y…    46.6     756 SOUTH 
+    ## 3 Influenza States        Colora…    2012 Age     >=18 Y…    56.1    1170 WEST  
+    ## 4 Influenza States        Delawa…    2012 Age     >=18 Y…    41.6     981 SOUTH 
+    ## 5 Influenza States        Georgia    2012 Age     >=18 Y…    33.6    1007 SOUTH 
+    ## 6 Influenza States        Hawaii     2012 Age     >=18 Y…    42      1385 WEST  
+    ## # … with 1,803 more rows, and abbreviated variable names ¹​`Geography Type`,
+    ## #   ²​Geography, ³​`Survey Year_Influenza Season`, ⁴​`Dimension Type`, ⁵​Dimension,
+    ## #   ⁶​Estimate, ⁷​`Sample Size`
+    ## # ℹ Use `print(n = ...)` to see more rows
+    ## 
+    ## # Use as.data.table()/as.data.frame()/as_tibble() to access results
+
+``` r
+table(vaxdata_DT_region$region)
+```
+
+    ## 
+    ##             MIDWEST NORTHEAST     SOUTH      WEST 
+    ##        80       408       526       440       355
