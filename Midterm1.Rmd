@@ -61,6 +61,7 @@ vaxdata1<-vaxdata1 %>% drop_na(Estimate)
 dim(vaxdata1)
 vaxdata_DT=as.data.table(vaxdata1)
 is.data.table(vaxdata_DT)
+
 ```
 
 ```{r, summary statistics on variable of interest}
@@ -85,6 +86,75 @@ is.data.table(vaxdata_DT_region)
 vaxdata_DT_region<-subset(vaxdata_DT_region, `region`!="")
 
 table(vaxdata_DT_region$region)
+```
+```{r}
+unique(vaxdata_DT_region$"Survey Year_Influenza Season")
+```
+```{r}
+mean(vaxdata_DT$Estimate)
+```
+
+
+```{r, rename variables}
+vaxdata1<-vaxdata1 %>% rename(Year="Survey Year_Influenza Season")
+vaxdata1<-vaxdata1 %>% rename(Age= "Dimension")
+tail(vaxdata1)
+```
+```{r}
+vaxdata1<-distinct(vaxdata1)
+```
+```{r}
+vaxdata1%>%
+  filter(Geography=="United States", Vaccine == "Influenza", Age !=">=18 Years") %>% 
+  ggplot(aes(x=Year, fill= Age, y=Estimate)) +   
+  geom_col(color="black", position="dodge")+
+  labs(title="Influenza Vaccination Rate Among Pregnant Women in the U.S. 2012-2019", x="Year", y= "Vaccination Rate (%)")+
+scale_fill_brewer(palette = "Blues")
+
+```
+```{r}
+vaxdata1%>%
+  filter(Geography=="United States", Vaccine == "Tdap", Age !=">=18 Years") %>% 
+  ggplot(aes(x=Year, fill= Age, y=Estimate)) +   
+  geom_col(color="black", position="dodge")+
+  labs(title="Tdap Vaccination Rate Among Pregnant Women in the U.S. 2012-2019", x="Year", y= "Vaccination Rate (%)")+
+scale_fill_brewer(palette = "Purples")
+```
+ 
+```{r}
+vaxdata_DF_region <- as.data.frame(vaxdata_DT_region)
+```
+```{r}
+vaxdata_DF_region%>%
+  filter(Geography!="United States" & Geography != "Puerto Rico", Vaccine == "Influenza", Dimension ==">=18 Years", `Survey Year_Influenza Season` ==2019) %>% 
+  ggplot(aes( fill=  region, y=Estimate)) +   
+  geom_boxplot(color="black")+
+  labs(title="Influenza Vaccination Rate Among Pregnant Women in the U.S. 2019",  y= "Vaccination Rate (%)")+
+scale_fill_brewer(palette = "Reds")+
+  facet_wrap(~ region, nrow = 1)
+```
+```{r}
+vaxdata_DF_region%>%
+  filter(Geography!="United States" & Geography != "Puerto Rico", Vaccine == "Influenza", Dimension ==">=18 Years", `Survey Year_Influenza Season` ==2012) %>% 
+  ggplot(aes( fill=  region, y=Estimate)) +   
+  geom_boxplot(color="black")+
+  labs(title="Influenza Vaccination Rate Among Pregnant Women in the U.S. 2012",  y= "Vaccination Rate (%)")+
+scale_fill_brewer(palette = "Reds")+
+  facet_wrap(~ region, nrow = 1)
+```
+```{r}
+vaxdata_DF_region<-vaxdata_DF_region %>% rename(Year="Survey Year_Influenza Season")
+vaxdata_DF_region$Year <-as.character(vaxdata_DF_region$Year)
+```
+```{r}
+vaxdata_DF_region%>%
+  filter(Geography!="United States" & Geography != "Puerto Rico", Vaccine == "Influenza", Dimension ==">=18 Years", Year == 2012 | Year == 2019) %>% 
+  ggplot(aes(y=Estimate, x = Year, fill = Year)) +   
+  geom_boxplot(color="black")+
+  labs(title="Influenza Vaccination Rate Among Pregnant Women in the U.S. 2012 vs 2019",  y= "Vaccination Rate (%)")+
+scale_fill_brewer(palette = "Greens")+
+  facet_wrap(~region, nrow=1)
+
 ```
 
 

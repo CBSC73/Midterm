@@ -1,7 +1,7 @@
 Midterm
 ================
 CB
-2022-10-21
+2022-10-22
 
 # **Title: Influenza Vaccine Uptake by Region and Age Group from 2012-2019 in the United States**
 
@@ -216,31 +216,112 @@ is.data.table(vaxdata_DT_region)
     ## [1] TRUE
 
 ``` r
-vaxdata_DT_region %>% drop_na(region)
-```
+vaxdata_DT_region<-subset(vaxdata_DT_region, `region`!="")
 
-    ## Source: local data table [1,809 x 9]
-    ## Call:   na.omit(`_DT1`, cols = "region")
-    ## 
-    ##   Vaccine   Geography T…¹ Geogr…² Surve…³ Dimen…⁴ Dimen…⁵ Estim…⁶ Sampl…⁷ region
-    ##   <chr>     <chr>         <chr>     <int> <chr>   <chr>     <dbl>   <dbl> <chr> 
-    ## 1 Influenza States        Alaska     2012 Age     >=18 Y…    49.2     852 WEST  
-    ## 2 Influenza States        Arkans…    2012 Age     >=18 Y…    46.6     756 SOUTH 
-    ## 3 Influenza States        Colora…    2012 Age     >=18 Y…    56.1    1170 WEST  
-    ## 4 Influenza States        Delawa…    2012 Age     >=18 Y…    41.6     981 SOUTH 
-    ## 5 Influenza States        Georgia    2012 Age     >=18 Y…    33.6    1007 SOUTH 
-    ## 6 Influenza States        Hawaii     2012 Age     >=18 Y…    42      1385 WEST  
-    ## # … with 1,803 more rows, and abbreviated variable names ¹​`Geography Type`,
-    ## #   ²​Geography, ³​`Survey Year_Influenza Season`, ⁴​`Dimension Type`, ⁵​Dimension,
-    ## #   ⁶​Estimate, ⁷​`Sample Size`
-    ## # ℹ Use `print(n = ...)` to see more rows
-    ## 
-    ## # Use as.data.table()/as.data.frame()/as_tibble() to access results
-
-``` r
 table(vaxdata_DT_region$region)
 ```
 
     ## 
-    ##             MIDWEST NORTHEAST     SOUTH      WEST 
-    ##        80       408       526       440       355
+    ##   MIDWEST NORTHEAST     SOUTH      WEST 
+    ##       408       526       440       355
+
+``` r
+unique(vaxdata_DT_region$"Survey Year_Influenza Season")
+```
+
+    ## [1] 2012 2013 2014 2015 2016 2017 2018 2019
+
+``` r
+mean(vaxdata_DT$Estimate)
+```
+
+    ## [1] 59.87424
+
+``` r
+vaxdata1<-vaxdata1 %>% rename(Year="Survey Year_Influenza Season")
+vaxdata1<-vaxdata1 %>% rename(Age= "Dimension")
+tail(vaxdata1)
+```
+
+    ## # A tibble: 6 × 8
+    ##   Vaccine `Geography Type` Geography      Year Dimension…¹ Age   Estim…² Sampl…³
+    ##   <chr>   <chr>            <chr>         <int> <chr>       <chr>   <dbl>   <dbl>
+    ## 1 Tdap    National         United States  2019 Age         >=35…    77.6    4447
+    ## 2 Tdap    States           Utah           2019 Age         >=35…    72.6     270
+    ## 3 Tdap    States           Vermont        2019 Age         >=35…    87.8     153
+    ## 4 Tdap    States           Virginia       2019 Age         >=35…    81.6     224
+    ## 5 Tdap    States           Washington     2019 Age         >=35…    84.9     254
+    ## 6 Tdap    States           Wisconsin      2019 Age         >=35…    72.6     133
+    ## # … with abbreviated variable names ¹​`Dimension Type`, ²​Estimate,
+    ## #   ³​`Sample Size`
+
+``` r
+vaxdata1<-distinct(vaxdata1)
+```
+
+``` r
+vaxdata1%>%
+  filter(Geography=="United States", Vaccine == "Influenza", Age !=">=18 Years") %>% 
+  ggplot(aes(x=Year, fill= Age, y=Estimate)) +   
+  geom_col(color="black", position="dodge")+
+  labs(title="Influenza Vaccination Rate Among Pregnant Women in the U.S. 2012-2019", x="Year", y= "Vaccination Rate (%)")+
+scale_fill_brewer(palette = "Blues")
+```
+
+![](Midterm1_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+
+``` r
+vaxdata1%>%
+  filter(Geography=="United States", Vaccine == "Tdap", Age !=">=18 Years") %>% 
+  ggplot(aes(x=Year, fill= Age, y=Estimate)) +   
+  geom_col(color="black", position="dodge")+
+  labs(title="Tdap Vaccination Rate Among Pregnant Women in the U.S. 2012-2019", x="Year", y= "Vaccination Rate (%)")+
+scale_fill_brewer(palette = "Purples")
+```
+
+![](Midterm1_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
+``` r
+vaxdata_DF_region <- as.data.frame(vaxdata_DT_region)
+```
+
+``` r
+vaxdata_DF_region%>%
+  filter(Geography!="United States" & Geography != "Puerto Rico", Vaccine == "Influenza", Dimension ==">=18 Years", `Survey Year_Influenza Season` ==2019) %>% 
+  ggplot(aes( fill=  region, y=Estimate)) +   
+  geom_boxplot(color="black")+
+  labs(title="Influenza Vaccination Rate Among Pregnant Women in the U.S. 2019",  y= "Vaccination Rate (%)")+
+scale_fill_brewer(palette = "Reds")+
+  facet_wrap(~ region, nrow = 1)
+```
+
+![](Midterm1_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+``` r
+vaxdata_DF_region%>%
+  filter(Geography!="United States" & Geography != "Puerto Rico", Vaccine == "Influenza", Dimension ==">=18 Years", `Survey Year_Influenza Season` ==2012) %>% 
+  ggplot(aes( fill=  region, y=Estimate)) +   
+  geom_boxplot(color="black")+
+  labs(title="Influenza Vaccination Rate Among Pregnant Women in the U.S. 2012",  y= "Vaccination Rate (%)")+
+scale_fill_brewer(palette = "Reds")+
+  facet_wrap(~ region, nrow = 1)
+```
+
+![](Midterm1_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+``` r
+vaxdata_DF_region<-vaxdata_DF_region %>% rename(Year="Survey Year_Influenza Season")
+vaxdata_DF_region$Year <-as.character(vaxdata_DF_region$Year)
+```
+
+``` r
+vaxdata_DF_region%>%
+  filter(Geography!="United States" & Geography != "Puerto Rico", Vaccine == "Influenza", Dimension ==">=18 Years", Year == 2012 | Year == 2019) %>% 
+  ggplot(aes(y=Estimate, x = Year, fill = Year)) +   
+  geom_boxplot(color="black")+
+  labs(title="Influenza Vaccination Rate Among Pregnant Women in the U.S. 2012 vs 2019",  y= "Vaccination Rate (%)")+
+scale_fill_brewer(palette = "Greens")+
+  facet_wrap(~region, nrow=1)
+```
+
+![](Midterm1_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
