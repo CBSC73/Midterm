@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # **Title: Influenza Vaccine Uptake by Region and Age Group from 2012-2019 in the United States**
-## **Introduction: Pregnant women and newborns are at higher risk for severe illness from Influenza virus infection(Ref). Influenza during pregnancy can lead to severe maternal respiratory illness requiring hospitalization. It can also be a serious condition for infants (babies under 1 year of age), especially during the neonatal period (first 30 days of life) and for those with pre-existing respiratory conditions such as bronchopulmonary dysplasia (Ref). The yearly influenza vaccine has a long track record of safety and efficacy during pregnancy and is recommended by the Centers for Disease Control (CDC) for all pregnant women (Ref). Despite this recommendation, only approximately 50% of women receive the influenza vaccine during pregnancy (ref). The objective of this qualitative data analysis is two fold, first to examine factors associated with low vaccine uptake. Specifically, age group and location. Second, to examine these trends over time to see whether uptake is increasing or decreasing. Identifying those pregnant women less likely to get vaccinated can help inform where efforts to promote vaccine utilization are needed most.**   
+### **Introduction: Pregnant women and their newborns are at higher risk for severe illness from Influenza virus infection(Ref). Influenza during pregnancy can lead to severe maternal respiratory illness requiring hospitalization. It can also be a serious condition for infants (babies under 1 year of age), especially during the neonatal period (first 30 days of life) and for those with pre-existing respiratory conditions such as bronchopulmonary dysplasia (Ref). The yearly influenza vaccine has a long track record of safety and efficacy during pregnancy and is recommended by the Centers for Disease Control (CDC) for all pregnant women (Ref). Despite this recommendation by the CDC and the American College of Obstetrics (ref), many women choose not to receive the vaccination during pregnancy (ref). The objective of this qualitative data analysis is two fold, first to examine factors associated with low vaccine uptake. Specifically, age group and location. Second, to examine these trends over time to see whether uptake is increasing or decreasing. Identifying those pregnant women less likely to get vaccinated can help inform where efforts to promote vaccine utilization are needed most.**   
 
 ```{r, Load required libraries}
 library(data.table)
@@ -23,7 +23,7 @@ library(knitr)
 library(ggplot2)
 ```
 
-```{r}
+```{r read in data, echo=FALSE}
 library(readr)
 Vaccination_Coverage_among_Pregnant_Women_3_ <- read_csv("C:/Users/clair/Desktop/PM566/Vaccination_Coverage_among_Pregnant_Women (3).csv", 
     col_types = cols(`Survey Year_Influenza Season` = col_integer(), 
@@ -31,12 +31,12 @@ Vaccination_Coverage_among_Pregnant_Women_3_ <- read_csv("C:/Users/clair/Desktop
         `Sample Size` = col_number()))
 ```
 
-```{r, rename dataset, look at variables}
+```{r, rename dataset, look at variables, include=FALSE}
 vaxdata<-Vaccination_Coverage_among_Pregnant_Women_3_
 dim(vaxdata)
 ```
 
-```{r, explore what options are in each variable}
+```{r, explore what options are in each variable, include=FALSE}
 head(vaxdata)
 unique(vaxdata$Vaccine)
 unique(vaxdata$'Geography Type')
@@ -46,116 +46,98 @@ unique(vaxdata$'Dimension Type')
 unique(vaxdata$Dimension)
 ```
 
-```{r, subset data to include age dimension only}
+```{r, subset data to include variable of interest: age group, include=FALSE}
 vaxdata1<-subset(vaxdata, `Dimension Type`=="Age")
 table(vaxdata1$'Dimension Type')
 ```
-```{r, check for missing values}
+```{r, check for missing values, include=FALSE}
 colSums(is.na(vaxdata1))
 ```
-```{r, remove NAs from dataset given there are only 15 out of 1824 rows (<1%) in my variable of interest, vaccination uptake ("Estimate")}
+```{r, 15 NA values. Remove NAs from dataset given there are only 15 out of 1824 rows (<1%) in my variable of interest, vaccination uptake ("Estimate"), include=FALSE}
 vaxdata1<-vaxdata1 %>% drop_na(Estimate)
+dim(vaxdata1)
 ```
 
-```{r, make into a data table}
+```{r, make into a data table, include=FALSE}
 dim(vaxdata1)
 vaxdata_DT=as.data.table(vaxdata1)
 is.data.table(vaxdata_DT)
-
 ```
 
-```{r, summary statistics on variable of interest}
+```{r, confirming NAs removed, able to do calculations, include=FALSE}
 summary(vaxdata_DT$Estimate)
 ```
 
-
-```{r, divide U.S into regions using CDC breakdown}
+```{r, divide U.S into regions using CDC breakdown, include=FALSE}
 vaxdata_DT_region <-vaxdata_DT [, region := fifelse(Geography== "Alaska"| Geography=="Arizona" | Geography=="California" | Geography=="Colorado"| Geography=="Hawaii"| Geography=="Idaho"| Geography=="Montana"| Geography=="Nevada"| Geography=="New Mexico"| Geography=="Oregon"| Geography=="Utah"| Geography=="Washington"|Geography== "Wyoming", "WEST",
                 fifelse(Geography=="Alabama"|Geography=="Arkansas"|Geography== "Delaware" |Geography== "District of Columbia"| Geography=="Florida"|Geography== "Georgia" | Geography=="Kentucky" |Geography== "Louisiana"|Geography== "Maryland" | Geography=="Mississippi" |Geography=="North Carolina"|Geography=="Oklahoma"| Geography=="South Carolina"| Geography=="Tennessee" |Geography=="Texas"|Geography== "Virginia"|Geography== "West Virginia", "SOUTH",
                 fifelse(Geography=="Illinois"| Geography=="Indiana"| Geography=="Iowa"|Geography== "Kansas"| Geography=="Michigan"|Geography== "Minnesota"| Geography=="Missouri"| Geography=="Nebraska"| Geography=="North Dakota"| Geography=="Ohio"|Geography=="South Dakota"|Geography=="Wisconsin", "MIDWEST",
-                fifelse(Geography=="Puerto Rico"|Geography=="United States", "",
+                fifelse(Geography=="Puerto Rico"|Geography=="United States"|Geography=="District of Columbia" |Geography=="NY-City of New York" |Geography=="NY-Rest of state", "",
                         "NORTHEAST"))))]
 
 ```
-```{r, make into data table}
+```{r, make into data table, include=FALSE}
 table(vaxdata_DT_region$region)
 vaxdata_DT_region<-as.data.table(vaxdata_DT_region)
 is.data.table(vaxdata_DT_region)
 ```
-```{r, drop NAs}
-vaxdata_DT_region<-subset(vaxdata_DT_region, `region`!="")
+```{r, drop NAs to create dataset with just the 50 states, include=FALSE}
+vaxdata_DT_region50<-subset(vaxdata_DT_region, `region`!="")
+head(vaxdata_DT_region50)
+table(vaxdata_DT_region50$region)
+```
+```{r, keep only columns I need for analyses, keep Influenza vaccine, remove District of Columbia, include=FALSE}
+vaxdata_DT_region50sub <-vaxdata_DT_region50 %>% select (Vaccine, Geography, `Survey Year_Influenza Season`, Dimension, Estimate, `Sample Size`, region)
 
-table(vaxdata_DT_region$region)
-```
-```{r}
-unique(vaxdata_DT_region$"Survey Year_Influenza Season")
-```
-```{r}
-mean(vaxdata_DT$Estimate)
+as.data.table(vaxdata_DT_region50sub)
+head(vaxdata_DT_region50sub)
+
+#Keep Influenza, remove District of Columbia
+vaxdata_DT_region50sub %>% filter(Vaccine=="Influenza", Geography != "District of COlumbia")
+
 ```
 
+```{r, rename variables,include=FALSE}
 
-```{r, rename variables}
-vaxdata1<-vaxdata1 %>% rename(Year="Survey Year_Influenza Season")
-vaxdata1<-vaxdata1 %>% rename(Age= "Dimension")
-tail(vaxdata1)
+vaxdata_DT_region50sub<-vaxdata_DT_region50sub %>% rename(Year="Survey Year_Influenza Season", State="Geography", Age="Dimension")
+head(vaxdata_DT_region50sub)
 ```
-```{r}
-vaxdata1<-distinct(vaxdata1)
+```{r, remove duplicates from dataset, include=FALSE}
+vaxdata_DT_region50sub<-distinct(vaxdata_DT_region50sub)
 ```
-```{r}
-vaxdata1%>%
-  filter(Geography=="United States", Vaccine == "Influenza", Age !=">=18 Years") %>% 
+```{r, include=FALSE}
+vax<-as.data.frame(vaxdata_DT_region50sub)
+```
+```{r, create first table, echo=FALSE}
+vax%>%
+  filter(Age !=">=18 Years") %>% 
   ggplot(aes(x=Year, fill= Age, y=Estimate)) +   
-  geom_col(color="black", position="dodge")+
+  geom_col(position="dodge")+
   labs(title="Influenza Vaccination Rate Among Pregnant Women in the U.S. 2012-2019", x="Year", y= "Vaccination Rate (%)")+
-scale_fill_brewer(palette = "Blues")
+scale_fill_brewer(palette = "Set1")
 
 ```
-```{r}
-vaxdata1%>%
-  filter(Geography=="United States", Vaccine == "Tdap", Age !=">=18 Years") %>% 
-  ggplot(aes(x=Year, fill= Age, y=Estimate)) +   
-  geom_col(color="black", position="dodge")+
-  labs(title="Tdap Vaccination Rate Among Pregnant Women in the U.S. 2012-2019", x="Year", y= "Vaccination Rate (%)")+
-scale_fill_brewer(palette = "Purples")
+
+#### Figure 1. This figure demonstrates the change in Influenza vaccination uptake among pregnant women in the U.S. over time by age group. The timeframe is between the years 2012 and 2019. WOmen 35 years old and above tend to have higher vaccination rates and those aged 18-24 years have the lowest. This suggests that as women get older they are more likely to get the influenza vaccine during pregnancy. It appears that comparing 2012 to 2019 that the gap vaccination rate differences between age groups is shrinking, with the years 2018 and 2019 having nearly equal rates. 
+
+
+```{r,include=FALSE}
+vax$Year<-as.character(vax$Year)
 ```
- 
-```{r}
-vaxdata_DF_region <- as.data.frame(vaxdata_DT_region)
-```
-```{r}
-vaxdata_DF_region%>%
-  filter(Geography!="United States" & Geography != "Puerto Rico", Vaccine == "Influenza", Dimension ==">=18 Years", `Survey Year_Influenza Season` ==2019) %>% 
-  ggplot(aes( fill=  region, y=Estimate)) +   
-  geom_boxplot(color="black")+
-  labs(title="Influenza Vaccination Rate Among Pregnant Women in the U.S. 2019",  y= "Vaccination Rate (%)")+
-scale_fill_brewer(palette = "Reds")+
-  facet_wrap(~ region, nrow = 1)
-```
-```{r}
-vaxdata_DF_region%>%
-  filter(Geography!="United States" & Geography != "Puerto Rico", Vaccine == "Influenza", Dimension ==">=18 Years", `Survey Year_Influenza Season` ==2012) %>% 
-  ggplot(aes( fill=  region, y=Estimate)) +   
-  geom_boxplot(color="black")+
-  labs(title="Influenza Vaccination Rate Among Pregnant Women in the U.S. 2012",  y= "Vaccination Rate (%)")+
-scale_fill_brewer(palette = "Reds")+
-  facet_wrap(~ region, nrow = 1)
-```
-```{r}
-vaxdata_DF_region<-vaxdata_DF_region %>% rename(Year="Survey Year_Influenza Season")
-vaxdata_DF_region$Year <-as.character(vaxdata_DF_region$Year)
-```
-```{r}
-vaxdata_DF_region%>%
-  filter(Geography!="United States" & Geography != "Puerto Rico", Vaccine == "Influenza", Dimension ==">=18 Years", Year == 2012 | Year == 2019) %>% 
-  ggplot(aes(y=Estimate, x = Year, fill = Year)) +   
+
+```{r, compare vaccine rates by region over time}
+vax%>%
+  filter(Age ==">=18 Years", Year == 2012 | Year == 2019) %>% 
+  ggplot(aes(y=Estimate, x = region, fill = region)) +   
   geom_boxplot(color="black")+
   labs(title="Influenza Vaccination Rate Among Pregnant Women in the U.S. 2012 vs 2019",  y= "Vaccination Rate (%)")+
-scale_fill_brewer(palette = "Greens")+
-  facet_wrap(~region, nrow=1)
-
+    theme(axis.title.x=element_blank())+
+scale_fill_brewer(palette = "Reds")+
+  facet_wrap(~Year, nrow=1)
 ```
+
+#### Figure 2. This boxplot figure shows Influenza vaccination rate among pregnant women in the United States by region between the years 2012 and 2019. This figure shows that in 2012 and 2019 the South has had the lowest vaccination rates. However this vaccination rate gap has grown considerably over time. In 2012 the West had the highest vaccination rate but over time this has gone down relative to the other region and in 2019 it was the Northeast with the highest rate.
+
 
 
 
